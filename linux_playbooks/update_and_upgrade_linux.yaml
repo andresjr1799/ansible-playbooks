@@ -1,0 +1,53 @@
+---
+# Playbook para actualizar sistemas en diversas distribuciones Linux
+# Este playbook realiza un 'update' y un 'upgrade' de los sistemas basados en Debian, Red Hat y sus derivados.
+
+- name: Actualizar sistemas Linux
+  hosts: all  # Aplica a todos los hosts en el inventario.
+  become: yes  # Ejecuta las tareas con privilegios de superusuario.
+  
+  tasks:
+    # Determina la distribución del sistema operativo
+    - name: Determinar la distribución del sistema operativo
+      ansible_facts:
+        distro: "{{ ansible_distribution | lower }}"  # Obtiene el nombre de la distribución.
+
+    # Actualiza sistemas basados en Debian (Ubuntu, Debian)
+    - name: Actualizar sistemas basados en Debian
+      apt:
+        update_cache: yes  # Actualiza la caché de los repositorios.
+        upgrade: dist  # Realiza un 'dist-upgrade', que actualiza todos los paquetes.
+      when: ansible_facts.distro in ['ubuntu', 'debian']  # Se ejecuta solo en distribuciones Debian/Ubuntu.
+      tags: update_ubuntu_debian  # Etiqueta para identificar esta tarea.
+
+    # Actualiza sistemas basados en Red Hat (CentOS, RHEL, AlmaLinux, Fedora)
+    - name: Actualizar sistemas basados en Red Hat
+      dnf:
+        name: '*'  # Actualiza todos los paquetes instalados.
+        state: latest  # Establece todos los paquetes a su última versión.
+      when: ansible_facts.distro in ['centos', 'rhel', 'alma', 'fedora']  # Se ejecuta solo en distribuciones basadas en Red Hat.
+      tags: update_rhel  # Etiqueta para identificar esta tarea.
+
+    # Actualiza específicamente CentOS 6
+    - name: Actualizar sistemas CentOS 6
+      yum:
+        name: '*'  # Actualiza todos los paquetes.
+        state: latest  # Establece todos los paquetes a su última versión.
+      when: ansible_facts.distro == 'centos' and ansible_facts.version == '6'  # Solo en CentOS 6.
+      tags: update_cent6  # Etiqueta para CentOS 6.
+
+    # Actualiza específicamente CentOS 7
+    - name: Actualizar sistemas CentOS 7
+      yum:
+        name: '*'  # Actualiza todos los paquetes.
+        state: latest  # Establece todos los paquetes a su última versión.
+      when: ansible_facts.distro == 'centos' and ansible_facts.version == '7'  # Solo en CentOS 7.
+      tags: update_cent7  # Etiqueta para CentOS 7.
+
+    # Actualiza específicamente CentOS 8
+    - name: Actualizar sistemas CentOS 8
+      dnf:
+        name: '*'  # Actualiza todos los paquetes.
+        state: latest  # Establece todos los paquetes a su última versión.
+      when: ansible_facts.distro == 'centos' and ansible_facts.version == '8'  # Solo en CentOS 8.
+      tags: update_cent8  # Etiqueta para CentOS 8.
