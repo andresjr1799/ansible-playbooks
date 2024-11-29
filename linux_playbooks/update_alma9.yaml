@@ -1,9 +1,0 @@
----
-- name: Actualizar el sistema AlmaLinux 9 version 2
-  hosts: all
-  become: yes
-  tasks:
-    - name: Actualizar todos los paquetes del sistema
-      ansible.builtin.yum:
-        name: "*"
-        state: latest
