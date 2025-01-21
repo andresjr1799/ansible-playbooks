@@ -1,4 +1,3 @@
----
 - name: Gestión de usuarios Linux para AWX
   hosts: all
   become: true
@@ -24,15 +23,6 @@
       tags:
         - always
         - validation
-
-    - name: Instalar sudo si no está presente
-      package:
-        name: sudo
-        state: present
-      when: is_sudo | bool
-      tags:
-        - sudo
-        - packages
 
     - name: Crear grupo primario del usuario
       group:
@@ -64,19 +54,6 @@
       tags:
         - users
 
-    - name: Crear directorio sudoers.d si no existe
-      file:
-        path: /etc/sudoers.d
-        state: directory
-        mode: '0755'
-        owner: root
-        group: root
-      when: 
-        - action != 'delete'
-        - is_sudo | bool
-      tags:
-        - sudo
-
     - name: Agregar entrada sudo al archivo
       lineinfile:
         path: "{{ sudoers_file }}"
@@ -94,7 +71,7 @@
     - name: Eliminar entrada sudo del archivo
       lineinfile:
         path: "{{ sudoers_file }}"
-        line: "{{ username }} ALL=(ALL) {{ 'NOPASSWD:' if sudo_nopasswd | bool else '' }} ALL"
+        regexp: "^{{ username }} "
         state: absent
         validate: 'visudo -cf %s'
       when: action == 'delete'
