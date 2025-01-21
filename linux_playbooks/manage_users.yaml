@@ -1,0 +1,107 @@
+---
+- name: Gestión de usuarios Linux para AWX
+  hosts: all
+  become: true
+  vars:
+    # Variables para AWX Survey:
+    # username: (text) - Nombre del usuario
+    # password: (password) - Contraseña del usuario
+    # state: (multiple choice) - present/absent
+    # is_sudo: (multiple choice) - yes/no
+    # sudo_nopasswd: (multiple choice) - yes/no
+    # action: (multiple choice) - create/delete/modify_password
+
+    default_shell: '/bin/bash'
+    sudoers_file: '/etc/sudoers.d/ansible-managed'
+
+  tasks:
+    - name: Validar que el nombre de usuario no esté vacío
+      fail:
+        msg: "El nombre de usuario es requerido"
+      when: not username is defined or username == ''
+      tags:
+        - always
+        - validation
+
+    - name: Validar que la contraseña no esté vacía para crear o modificar
+      fail:
+        msg: "La contraseña es requerida para crear o modificar usuarios"
+      when: 
+        - action in ['create', 'modify_password']
+        - not password is defined or password == ''
+      tags:
+        - always
+        - validation
+
+    - name: Instalar sudo si no está presente
+      package:
+        name: sudo
+        state: present
+      when: is_sudo | bool
+      tags:
+        - sudo
+        - packages
+
+    - name: Crear grupo primario del usuario
+      group:
+        name: "{{ username }}"
+        state: "{{ state }}"
+      when: action == 'create'
+      tags:
+        - users
+        - groups
+
+    - name: Gestionar usuario
+      user:
+        name: "{{ username }}"
+        password: "{{ password | password_hash('sha512') if password is defined else omit }}"
+        shell: "{{ default_shell }}"
+        group: "{{ username }}"
+        state: "{{ state }}"
+        update_password: "{{ 'always' if action == 'modify_password' else 'on_create' }}"
+      when: action != 'delete'
+      tags:
+        - users
+
+    - name: Eliminar usuario
+      user:
+        name: "{{ username }}"
+        state: absent
+        remove: yes
+      when: action == 'delete'
+      tags:
+        - users
+
+    - name: Crear directorio sudoers.d si no existe
+      file:
+        path: /etc/sudoers.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+      when: 
+        - action != 'delete'
+        - is_sudo | bool
+      tags:
+        - sudo
+
+    - name: Configurar permisos sudo
+      copy:
+        content: "{{ username }} ALL=(ALL) {{ 'NOPASSWD:' if sudo_nopasswd | bool else '' }} ALL"
+        dest: "{{ sudoers_file }}"
+        validate: 'visudo -cf %s'
+        mode: '0440'
+        owner: root
+        group: root
+      when: 
+        - action != 'delete'
+        - is_sudo | bool
+      tags:
+        - sudo
+
+    - name: Eliminar configuración sudo
+      file:
+        path: "{{ sudoers_file }}"
+        state: absent
+      when: action == 'delete'
+      tags:
