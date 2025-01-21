@@ -1,0 +1,116 @@
+---
+# Playbook para instalación de Ansible AWX en sistemas basdos en RHEL 8-9
+# Autor: Jaime Andres Londoño
+# Versión: 1.0
+# Fecha: 2024-11-27
+
+- hosts: awx_server  # Grupo de hosts objetivo para la instalación
+  become: yes  # Ejecutar tareas con privilegios de superusuario
+  vars:
+    # Variables configurables para personalizar la instalación
+    awx_host: "awx.server.com"  # Nombre de host para acceso a AWX
+    awx_password: "jaime270199"  # Contraseña de administración
+    k3s_version: "v1.29.6+k3s2"  # Versión específica de K3s
+    postgres_data_path: "/data/postgres-15"  # Ruta para datos de PostgreSQL
+    projects_data_path: "/data/projects"  # Ruta para proyectos de AWX
+
+  tasks:
+    - name: Deshabilitar Firewalld
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      # Detiene y deshabilita el firewall para evitar bloqueos
+
+    - name: Deshabilitar SELinux
+      selinux:
+        state: disabled
+      # Desactiva SELinux para prevenir problemas de permisos
+
+    - name: Instalar paquetes requeridos
+      dnf:
+        name:
+          - git
+          - curl
+        state: present
+      # Instala dependencias necesarias para la instalación
+
+    - name: Instalar K3s
+      shell: 
+        cmd: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -s - --write-kubeconfig-mode 644
+        creates: /usr/local/bin/k3s
+      # Instala K3s con una versión específica y configura permisos de kubeconfig
+    
+    - name: Crear un enlace simbólico de k3s a kubectl
+      ansible.builtin.file:
+        src: "/usr/local/bin/k3s"
+        dest: "/usr/sbin/kubectl"
+        state: link
+
+    - name: Clonar repositorio de AWX en K3s
+      git:
+        repo: https://github.com/kurokobo/awx-on-k3s.git
+        dest: ~/awx-on-k3s
+        version: 2.19.1
+      # Clona el repositorio de AWX en la versión 2.19.1
+
+    - name: Crear directorios de datos
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: 1000
+        group: 0
+        mode: '0755'
+      loop:
+        - "{{ postgres_data_path }}"
+        - "{{ projects_data_path }}"
+      # Crea directorios para datos de PostgreSQL y proyectos con permisos adecuados
+
+    - name: Crear Certificado SSL
+      shell: 
+        cmd: openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -out ~/awx-on-k3s/base/tls.crt -keyout ~/awx-on-k3s/base/tls.key -subj "/CN={{ awx_host }}/O={{ awx_host }}" -addext "subjectAltName = DNS:{{ awx_host }}"
+        creates: ~/awx-on-k3s/base/tls.crt
+      # Genera un certificado SSL autofirmado para el host de AWX
+
+    - name: Actualizar configuración de AWX
+      block:
+        - name: Reemplazar nombre de host en configuración
+          replace:
+            path: ~/awx-on-k3s/base/awx.yaml
+            regexp: 'awx\.example\.com'
+            replace: "{{ awx_host }}"
+
+        - name: Actualizar contraseña en kustomization
+          replace:
+            path: ~/awx-on-k3s/base/kustomization.yaml
+            regexp: 'Ansible123!'
+            replace: "{{ awx_password }}"
+      # Personaliza la configuración de AWX con el host y contraseña definidos
+
+    - name: Desplegar Operador K3s AWX
+      shell:
+        chdir: ~/awx-on-k3s
+        cmd: kubectl apply -k operator
+      register: operator_deployment
+      # Despliega el operador de AWX en K3s
+
+    - name: Esperar despliegue del Operador
+      pause:
+        seconds: 200
+      # Pausa para permitir la inicialización completa del operador
+
+    - name: Desplegar AWX
+      shell:
+        chdir: ~/awx-on-k3s
+        cmd: kubectl apply -k base
+      register: awx_deployment
+      # Despliega la instancia de AWX
+
+  post_tasks:
+    - name: Mostrar estado del despliegue de AWX
+      debug:
+        msg: 
+          - "Instalación de AWX completada"
+          - "Accede a AWX en: https://{{ awx_host }}"
+          - "Para verificar el estado, ejecuta: kubectl -n awx get all"
+      # Muestra información de despliegue y acceso a AWX
