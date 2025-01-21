@@ -105,3 +105,4 @@
         state: absent
       when: action == 'delete'
       tags:
+        - sudo
