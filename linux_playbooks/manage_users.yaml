@@ -3,14 +3,6 @@
   hosts: all
   become: true
   vars:
-    # Variables para AWX Survey:
-    # username: (text) - Nombre del usuario
-    # password: (password) - Contraseña del usuario
-    # state: (multiple choice) - present/absent
-    # is_sudo: (multiple choice) - yes/no
-    # sudo_nopasswd: (multiple choice) - yes/no
-    # action: (multiple choice) - create/delete/modify_password
-
     default_shell: '/bin/bash'
     sudoers_file: '/etc/sudoers.d/ansible-managed'
 
@@ -85,24 +77,26 @@
       tags:
         - sudo
 
-    - name: Configurar permisos sudo
-      copy:
-        content: "{{ username }} ALL=(ALL) {{ 'NOPASSWD:' if sudo_nopasswd | bool else '' }} ALL"
-        dest: "{{ sudoers_file }}"
+    - name: Agregar entrada sudo al archivo
+      lineinfile:
+        path: "{{ sudoers_file }}"
+        line: "{{ username }} ALL=(ALL) {{ 'NOPASSWD:' if sudo_nopasswd | bool else '' }} ALL"
+        state: present
+        create: yes
         validate: 'visudo -cf %s'
         mode: '0440'
-        owner: root
-        group: root
       when: 
         - action != 'delete'
         - is_sudo | bool
       tags:
         - sudo
 
-    - name: Eliminar configuración sudo
-      file:
+    - name: Eliminar entrada sudo del archivo
+      lineinfile:
         path: "{{ sudoers_file }}"
+        line: "{{ username }} ALL=(ALL) {{ 'NOPASSWD:' if sudo_nopasswd | bool else '' }} ALL"
         state: absent
+        validate: 'visudo -cf %s'
       when: action == 'delete'
       tags:
         - sudo
