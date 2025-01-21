@@ -4,7 +4,7 @@
 # Versión: 1.0
 # Fecha: 2024-11-27
 
-- hosts: awx_server  # Grupo de hosts objetivo para la instalación
+- hosts: vbox  # Grupo de hosts objetivo para la instalación
   become: yes  # Ejecutar tareas con privilegios de superusuario
   vars:
     # Variables configurables para personalizar la instalación
