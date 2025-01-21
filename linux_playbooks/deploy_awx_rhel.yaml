@@ -9,7 +9,7 @@
   vars:
     # Variables configurables para personalizar la instalación
     awx_host: "awx.server.com"  # Nombre de host para acceso a AWX
-    awx_password: "jaime270199"  # Contraseña de administración
+    awx_password: "xC43!*X1tHfc4"  # Contraseña de administración
     k3s_version: "v1.29.6+k3s2"  # Versión específica de K3s
     postgres_data_path: "/data/postgres-15"  # Ruta para datos de PostgreSQL
     projects_data_path: "/data/projects"  # Ruta para proyectos de AWX
