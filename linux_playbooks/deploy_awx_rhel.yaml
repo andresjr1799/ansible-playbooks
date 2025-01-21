@@ -6,17 +6,10 @@
 
 - hosts: awx-vbox  # Grupo de hosts objetivo para la instalación
   become: yes  # Ejecutar tareas con privilegios de superusuario
-  vars_prompt:
-    - name: "awx_host"
-      prompt: "Ingrese el valor de awx_host"
-      private: no  # Cambiar a 'yes' si no quieres que el valor se muestre en texto plano
-    - name: "awx_password"
-      prompt: "Ingrese el valor de awx_password"
-      private: no  # El valor ingresado será ocultado
   vars:
     # Variables configurables para personalizar la instalación
-    #awx_host: "awx.server.com"  # Nombre de host para acceso a AWX
-    #awx_password: "jaime270199"  # Contraseña de administración
+    awx_host: "awx.server.com"  # Nombre de host para acceso a AWX
+    awx_password: "jaime270199"  # Contraseña de administración
     k3s_version: "v1.29.6+k3s2"  # Versión específica de K3s
     postgres_data_path: "/data/postgres-15"  # Ruta para datos de PostgreSQL
     projects_data_path: "/data/projects"  # Ruta para proyectos de AWX
