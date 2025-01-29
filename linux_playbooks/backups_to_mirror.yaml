@@ -12,7 +12,7 @@
   tasks:
     - name: Crear directorio de destino en el servidor remoto
       become: yes
-      ansible.posix.synchronize
+      ansible.builtin.command
         cmd: "mkdir -p /opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}"
       delegate_to: "{{ ip_backup }}"
       vars:
