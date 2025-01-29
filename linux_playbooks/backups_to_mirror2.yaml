@@ -22,7 +22,7 @@
 
     - name: Enviar archivo 1 via RSYNC
       ansible.builtin.command:
-        cmd: "rsync -avh {{ file1 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/ --rsh='ssh -o StrictHostKeyChecking=no'"
+        cmd: "rsync -avh {{ file1 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
       when: file1 is defined and file1 != ""
 
     - name: Enviar archivo 2 via RSYNC
