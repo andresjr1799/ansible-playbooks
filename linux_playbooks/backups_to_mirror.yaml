@@ -8,39 +8,28 @@
     file3: ""  # Variable para el tercer archivo
     ip_backup: ""  # Variable para la IP de destino
     folder_destino: ""  # Variable para el directorio de destino
-    ansible_user: root
-    #ansible_ssh_private_key_file: /root/.ssh  # Ruta a la clave privada SSH
 
   tasks:
     - name: Crear directorio de destino en el servidor remoto
+      become: yes
       ansible.builtin.command:
         cmd: "mkdir -p /opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}"
       delegate_to: "{{ ip_backup }}"
+      vars:
+        ansible_user: root
+        ansible_become: yes
 
     - name: Enviar archivo 1 via RSYNC
-      ansible.builtin.synchronize:
-        src: "{{ file1 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
-        mode: push
-      delegate_to: "{{ ip_backup }}"
-      when: file1 | length > 0
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file1 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+      when: file1 is defined and file1 != ""
 
     - name: Enviar archivo 2 via RSYNC
-      ansible.builtin.synchronize:
-        src: "{{ file2 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
-        rsync_opts:
-          - "-avh"
-          - "--rsh=ssh"
-      delegate_to: "{{ ip_backup }}"
-      when: file2 | length > 0
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file2 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+      when: file2 is defined and file2 != ""
 
     - name: Enviar archivo 3 via RSYNC
-      ansible.builtin.synchronize:
-        src: "{{ file3 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
-        rsync_opts:
-          - "-avh"
-          - "--rsh=ssh"
-      delegate_to: "{{ ip_backup }}"
-      when: file3 | length > 0
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file3 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+      when: file3 is defined and file3 != ""
