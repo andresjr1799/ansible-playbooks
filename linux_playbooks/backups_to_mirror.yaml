@@ -2,6 +2,7 @@
 - name: Enviar archivos por rsync
   hosts: all
   gather_facts: yes
+  become: yes
   tasks:
     - name: Enviar archivos mediante rsync
       ansible.posix.synchronize:
