@@ -23,7 +23,7 @@
     - name: Enviar archivo 1 via RSYNC
       ansible.posix.synchronize:
         src: "{{ file1 }}"
-        dest: "root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
       vars:
         ansible_user: root
         ansible_password: linuxlandia32
