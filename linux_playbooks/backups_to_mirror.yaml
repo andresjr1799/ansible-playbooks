@@ -21,9 +21,6 @@
       ansible.builtin.synchronize:
         src: "{{ file1 }}"
         dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
-        rsync_opts:
-          - "-avh"
-          - "--rsh=ssh -o StrictHostKeyChecking=no"
       delegate_to: "{{ ip_backup }}"
       when: file1 | length > 0
 
