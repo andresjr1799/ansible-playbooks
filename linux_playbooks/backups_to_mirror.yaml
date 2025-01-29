@@ -4,7 +4,7 @@
   gather_facts: yes
   tasks:
     - name: Enviar archivos mediante rsync
-      ansible.builtin.rsync:
+      ansible.posix.synchronize:
         src: "{{ item }}"
         dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}"
         remote_src: no
