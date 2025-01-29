@@ -24,9 +24,7 @@
       ansible.builtin.synchronize:
         src: "{{ file1 }}"
         dest: "root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
-        rsync_opts:
-          - "-avh"
-          - "--rsh=ssh -o StrictHostKeyChecking=no"
+
       vars:
         ansible_user: root
         ansible_password: linuxlandia32
