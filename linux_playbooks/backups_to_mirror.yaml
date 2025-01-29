@@ -23,11 +23,10 @@
     - name: Enviar archivo 1 via RSYNC
       ansible.builtin.synchronize:
         src: "{{ file1 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+        dest: "root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
         rsync_opts:
           - "-avh"
           - "--rsh=ssh -o StrictHostKeyChecking=no"
-      delegate_to: "{{ ip_backup }}"
       vars:
         ansible_user: root
         ansible_password: linuxlandia32
@@ -38,11 +37,10 @@
     - name: Enviar archivo 2 via RSYNC
       ansible.builtin.synchronize:
         src: "{{ file2 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+        dest: "root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
         rsync_opts:
           - "-avh"
           - "--rsh=ssh"
-      delegate_to: "{{ ip_backup }}"
       vars:
         ansible_user: root
         ansible_password: linuxlandia32
@@ -53,11 +51,10 @@
     - name: Enviar archivo 3 via RSYNC
       ansible.builtin.synchronize:
         src: "{{ file3 }}"
-        dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+        dest: "root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
         rsync_opts:
           - "-avh"
           - "--rsh=ssh"
-      delegate_to: "{{ ip_backup }}"
       vars:
         ansible_user: root
         ansible_password: linuxlandia32
