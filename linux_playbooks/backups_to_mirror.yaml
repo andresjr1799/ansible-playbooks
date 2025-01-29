@@ -26,7 +26,7 @@
         dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
         rsync_opts:
           - "-avh"
-          - "--rsh=ssh"
+          - "--rsh=ssh -o StrictHostKeyChecking=no"
       delegate_to: "{{ ip_backup }}"
       vars:
         ansible_user: root
