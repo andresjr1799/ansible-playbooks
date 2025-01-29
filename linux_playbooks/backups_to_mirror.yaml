@@ -8,9 +8,6 @@
       ansible.posix.synchronize:
         src: "{{ item }}"
         dest: "/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}"
-        remote_src: no
-        archive: yes
-        compress: yes
       with_items:
         - "{{ file1 }}"
         - "{{ file2 }}"
