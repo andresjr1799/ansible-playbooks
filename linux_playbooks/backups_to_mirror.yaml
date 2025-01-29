@@ -1,5 +1,5 @@
 ---
-- name: Enviar archivos via RSYNC
+- name: Enviar archivos via RSYNC al mirror
   hosts: all
   vars:
     file1: ""  # Variable para el primer archivo
