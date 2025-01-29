@@ -15,6 +15,7 @@
       delegate_to: "{{ ip_backup }}"
       vars:
         ansible_user: root
+        ansible_host: 192.168.199.45
         ansible_password: linuxlandia32
         ansible_become: yes
         ansible_become_password: linuxlandia32
