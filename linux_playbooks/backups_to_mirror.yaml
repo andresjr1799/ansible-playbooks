@@ -9,7 +9,7 @@
     ip_backup: ""  # Variable para la IP de destino
     folder_destino: ""  # Variable para el directorio de destino
     ansible_user: root
-    ansible_ssh_private_key_file: /root/.ssh  # Ruta a la clave privada SSH
+    #ansible_ssh_private_key_file: /root/.ssh  # Ruta a la clave privada SSH
 
   tasks:
     - name: Crear directorio de destino en el servidor remoto
