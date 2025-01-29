@@ -1,0 +1,36 @@
+---
+- name: Enviar archivos via RSYNC al server mirror
+  hosts: all
+  vars:
+    file1: ""  # Variable para el primer archivo
+    file2: ""  # Variable para el segundo archivo
+    file3: ""  # Variable para el tercer archivo
+    ip_backup: ""  # Variable para la IP de destino
+    folder_destino: ""  # Variable para el directorio de destino
+
+  tasks:
+    - name: Crear directorio de destino en el servidor remoto
+      become: yes
+      ansible.builtin.command:
+        cmd: "mkdir -p /opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}"
+      delegate_to: "{{ ip_backup }}"
+      vars:
+        ansible_user: root
+        ansible_password: linuxlandia32
+        ansible_become: yes
+        ansible_become_password: linuxlandia32
+
+    - name: Enviar archivo 1 via RSYNC
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file1 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/ --rsh='ssh -o StrictHostKeyChecking=no'"
+      when: file1 is defined and file1 != ""
+
+    - name: Enviar archivo 2 via RSYNC
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file2 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+      when: file2 is defined and file2 != ""
+
+    - name: Enviar archivo 3 via RSYNC
+      ansible.builtin.command:
+        cmd: "rsync -avh {{ file3 }} root@{{ ip_backup }}:/opt/backups_ventana/{{ ansible_hostname }}/{{ folder_destino }}/"
+      when: file3 is defined and file3 != ""
