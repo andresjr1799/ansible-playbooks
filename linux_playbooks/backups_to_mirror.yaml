@@ -18,6 +18,7 @@
       vars:
         ansible_user: root
         ansible_become: yes
+        ansible_password: linuxlandia32
 
     - name: Enviar archivo 1 via RSYNC
       ansible.builtin.command:
