@@ -5,23 +5,6 @@
   gather_facts: yes
             
   tasks:
-    - name: Crear dominio en Virtualmin
-      shell: |
-        virtualmin create-domain --domain {{ dominio_instancia }}.colmedicos.com \
-        --desc "{{ dominio_instancia }}" \
-        --parent colmedicos.com \
-        --dir --web --dns --mysql
-      args:
-        executable: /bin/bash
-      register: dominio_creado
-      changed_when: dominio_creado.rc == 0
-
-    - name: Backup de httpd.conf
-      copy:
-        src: /etc/httpd/conf/httpd.conf
-        dest: /etc/httpd/conf/httpd.conf.backup
-        remote_src: yes
-
     - name: Reemplazar último VirtualHost en httpd.conf
       replace:
         path: /etc/httpd/conf/httpd.conf
