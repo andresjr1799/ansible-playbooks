@@ -32,3 +32,14 @@
         owner: mysql
         group: mysql
         follow: no
+
+    - name: Crear enlace simbólico SOFIA
+      ansible.builtin.file:
+        src: ".."
+        dest: "/mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/erp/pco/SOFIA"
+        state: link
+  
+
+       
+
+        
