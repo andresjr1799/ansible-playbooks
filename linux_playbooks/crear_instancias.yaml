@@ -2,14 +2,22 @@
 - name: Desplegar instancia web en Virtualmin
   hosts: all
   become: yes
-  gather_facts: yes
+  gather_facts: no
             
   tasks:
-    - name: Reemplazar último VirtualHost en httpd.conf
-      replace:
+    - name: Encontrar la última línea que contiene VirtualHost
+      shell: grep -n '<VirtualHost 192.168.199.28:80>' /etc/httpd/conf/httpd.conf | tail -n 1 | cut -d ':' -f 1
+      register: last_virtualhost_line
+      changed_when: false
+
+    - name: Truncar archivo desde la última ocurrencia de VirtualHost
+      shell: sed -i '{{ last_virtualhost_line.stdout }},$d' /etc/httpd/conf/httpd.conf
+      when: last_virtualhost_line.stdout != ""
+
+    - name: Agregar nuevo VirtualHost
+      blockinfile:
         path: /etc/httpd/conf/httpd.conf
-        regexp: '(?s)(<VirtualHost\s+192\.168\.199\.28:80>.*?</VirtualHost>)(?!.*?<VirtualHost.*?>)'
-        replace: |
+        block: |
           <VirtualHost 192.168.199.28:80>
               SuexecUserGroup "#500" "#500"
               ServerName {{ dominio_instancia }}.colmedicos.com
