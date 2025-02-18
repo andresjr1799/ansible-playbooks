@@ -8,7 +8,7 @@
    
     - name: Transferir ERP
       shell: |
-         rsync -avh --exclude='/mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp/pco/SOFIA' /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
+         rsync -avh --exclude='erp/pco/SOFIA' /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
     
               
     - name: Transferir base de datos
