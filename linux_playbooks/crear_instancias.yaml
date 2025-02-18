@@ -19,7 +19,7 @@
     - name: Backup de httpd.conf
       copy:
         src: /etc/httpd/conf/httpd.conf
-        dest: /etc/httpd/conf/httpd.conf.bak.{{ date }}
+        dest: /etc/httpd/conf/httpd.conf.bak.{{ ansible_date_time.date }}
         remote_src: yes
 
     - name: Encontrar la última línea que contiene VirtualHost
