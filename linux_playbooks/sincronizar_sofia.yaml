@@ -64,16 +64,16 @@
     - name: Modificar variables de conexión en configuracion.php
       ansible.builtin.replace:
         path: "{{ path_erp_destino }}/erp/pco/core/configuracion.php"
-        regexp: "('\\$BaseDatos=')[^']*(';)"
-        replace: "\\1{{ instancia_destino }}\\2"
-      register: result_lib_bd
+        regexp: '(^\s*\$BaseDatos=).*'
+        replace: '\1 "{{ instancia_destino }}"'
+      register: result_conf_bd
 
     - name: Modificar contraseña de la base de datos en configuracion.php
       ansible.builtin.replace:
         path: "{{ path_erp_destino }}/erp/pco/core/configuracion.php"
-        regexp: "('\\$PasswordBD=')[^']*(';)"
-        replace: "\\1{{ password_db_rednal }}\\2"
-      register: result_lib_pass
+        regexp: '(^\s*\$PasswordBD=).*'
+        replace: '\1 "{{ password_db_rednal }}"'
+      register: result_conf_pass
   
        
 
