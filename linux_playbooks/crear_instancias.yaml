@@ -29,48 +29,51 @@
         remote_src: yes
 
     - name: Reemplazar último VirtualHost en httpd.conf
-  replace:
-    path: /etc/httpd/conf/httpd.conf
-    regexp: '<VirtualHost 192\.168\.199\.28:80>(?:(?!<VirtualHost)[\s\S])*</VirtualHost>\s*$'
-    replace: |
-      <VirtualHost 10.180.96.8:80>
-          SuexecUserGroup "#500" "#500"
-          ServerName {{ dominio_instancia }}.colmedicos.com
-          ServerAlias www.{{ dominio_instancia }}.colmedicos.com
-          ServerAlias webmail.{{ dominio_instancia }}.colmedicos.com
-          ServerAlias admin.{{ dominio_instancia }}.colmedicos.com
-          DocumentRoot /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html
-          ErrorLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_error_log
-          CustomLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_access_log combined
-          ScriptAlias /cgi-bin/ /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin/
-          DirectoryIndex index.snt index.html index.htm index.php index.php4 index.php5
-          <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html>
-              Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch +ExecCGI
-              allow from all
-              AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
-              AddType application/x-httpd-php .snt .inc .php
-              AddHandler fcgid-script .snt
-              AddHandler fcgid-script .inc
-              AddHandler fcgid-script .php
-              AddHandler fcgid-script .php5
-              FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .snt
-              FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .inc
-              FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php
-              FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php5
-          </Directory>
-          <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin>
-              allow from all
-              AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
-          </Directory>
-          RewriteEngine on
-          RewriteCond %{HTTP_HOST} =webmail.{{ dominio_instancia }}.colmedicos.com
-          RewriteRule ^(?!/.well-known)(.*) https://{{ dominio_instancia }}.colmedicos.com:20000/ [R]
-          RewriteCond %{HTTP_HOST} =admin.{{ dominio_instancia }}.colmedicos.com
-          RewriteRule ^(?!/.well-known)(.*) http://{{ dominio_instancia }}.colmedicos.com:82/ [R]
-          RemoveHandler .snt
-          RemoveHandler .inc
-          RemoveHandler .php
-          RemoveHandler .php5
-          php_admin_value engine Off
-          FcgidMaxRequestLen 1073741824
-      </VirtualHost>
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '<VirtualHost 192\.168\.199\.28:80>(?:(?!<VirtualHost)[\s\S])*</VirtualHost>\s*$'
+        replace: |
+          <VirtualHost 10.180.96.8:80>
+              SuexecUserGroup "#500" "#500"
+              ServerName {{ dominio_instancia }}.colmedicos.com
+              ServerAlias www.{{ dominio_instancia }}.colmedicos.com
+              ServerAlias webmail.{{ dominio_instancia }}.colmedicos.com
+              ServerAlias admin.{{ dominio_instancia }}.colmedicos.com
+              DocumentRoot /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html
+              ErrorLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_error_log
+              CustomLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_access_log combined
+              ScriptAlias /cgi-bin/ /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin/
+              DirectoryIndex index.snt index.html index.htm index.php index.php4 index.php5
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html>
+                  Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch +ExecCGI
+                  allow from all
+                  AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+                  AddType application/x-httpd-php .snt .inc .php
+                  AddHandler fcgid-script .snt
+                  AddHandler fcgid-script .inc
+                  AddHandler fcgid-script .php
+                  AddHandler fcgid-script .php5
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .snt
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .inc
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php5
+              </Directory>
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin>
+                  allow from all
+                  AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+              </Directory>
+              RewriteEngine on
+              RewriteCond %{HTTP_HOST} =webmail.{{ dominio_instancia }}.colmedicos.com
+              RewriteRule ^(?!/.well-known)(.*) https://{{ dominio_instancia }}.colmedicos.com:20000/ [R]
+              RewriteCond %{HTTP_HOST} =admin.{{ dominio_instancia }}.colmedicos.com
+              RewriteRule ^(?!/.well-known)(.*) http://{{ dominio_instancia }}.colmedicos.com:82/ [R]
+              RemoveHandler .snt
+              RemoveHandler .inc
+              RemoveHandler .php
+              RemoveHandler .php5
+              php_admin_value engine Off
+              FcgidMaxRequestLen 1073741824
+          </VirtualHost>
+
+    - name: Recargar Apache
+      listen: Recargar Apache
