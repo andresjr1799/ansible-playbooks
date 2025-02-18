@@ -2,7 +2,7 @@
 - name: Desplegar instancia web en Virtualmin
   hosts: all
   become: yes
-  gather_facts: no
+  gather_facts: yes
             
   tasks:
     - name: Encontrar la última línea que contiene VirtualHost
@@ -59,3 +59,4 @@
               php_admin_value engine Off
               FcgidMaxRequestLen 1073741824
           </VirtualHost>
+        marker: ""  # Esto evita que Ansible agregue sus marcadores de comentario
