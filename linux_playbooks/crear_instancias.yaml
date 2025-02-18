@@ -2,7 +2,7 @@
 - name: Desplegar instancia web en Virtualmin
   hosts: all
   become: yes
-  gather_facts: yes
+  gather_facts: no
             
   tasks:
     - name: Reemplazar último VirtualHost en httpd.conf
