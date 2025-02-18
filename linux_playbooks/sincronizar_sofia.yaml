@@ -74,6 +74,35 @@
         regexp: '(^\s*\$PasswordBD=).*'
         replace: '\1 "{{ password_db_rednal }}"'
       register: result_conf_pass
+      
+    
+     - name: Eliminar archivos en los directorios ERP
+       shell: "rm -rf {{ path_erp_destino }}/erp/{{ item }}/*"
+       with_items:
+        - anx
+        - csv
+        - ecg
+        - err
+        - ext
+        - fin
+        - inf
+        - int
+        - lab
+        - log
+        - nom
+        - opt
+        - ost
+        - pic
+        - psi
+        - qrc
+        - sgc
+        - sgn
+        - sop
+        - spi
+        - vox
+       ignore_errors: yes 
+         
+ 
   
        
 
