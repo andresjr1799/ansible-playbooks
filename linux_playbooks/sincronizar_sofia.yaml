@@ -1,0 +1,34 @@
+---
+- name: Sincronizar Sofia + DB
+  hosts: sofia
+  become: yes
+  gather_facts: no
+        
+  tasks:
+   
+    - name: Transferir ERP
+      shell: |
+         rsync -avh /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp/
+         /mnt/colmedicos/webserver/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html/
+    
+              
+    - name: Transferir base de datos
+      shell: |
+         rsync -avh /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp/
+         /mnt/colmedicos/webserver/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html/
+
+    - name: Permisos para ERP
+      ansible.builtin.file:
+        path: /mnt/colmedicos/webserver/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html/erp
+        mode: '0777'
+        recurse: yes
+        owner: root
+        group: root
+   
+    - name: Permisos para MYSQL
+      ansible.builtin.file:
+        path: /mnt/colmedicos/webserver/colmedicos/domains/mysqlserver/{{ dominio_instancia }}
+        mode: '0777'
+        recurse: yes
+        owner: mysql
+        group: mysql
