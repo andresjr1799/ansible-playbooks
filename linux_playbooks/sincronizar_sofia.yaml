@@ -46,6 +46,20 @@
         src: ".."
         dest: "{{ path_erp_destino }}/erp/pco/SOFIA"
         state: link
+
+    - name: Modificar variables de conexión en lib.snt
+      ansible.builtin.replace:
+        path: "{{ path_erp_destino }}/erp/inc/lib.snt"
+        regexp: '(\$BaseDatos=")[^"]*(";)'
+        replace: '\1{{ instancia_destino }}\2'
+      register: result
+
+    - name: Modificar contraseña de la base de datos en lib.snt
+      ansible.builtin.replace:
+        path: "{{ path_erp_destino }}/erp/inc/lib.snt"
+        regexp: '(\$PasswordBD=")[^"]*(";)'
+        replace: '\1{{ password_db_rednal }}\2'
+      register: result   
   
 
        
