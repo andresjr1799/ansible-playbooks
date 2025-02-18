@@ -8,14 +8,12 @@
    
     - name: Transferir ERP
       shell: |
-         rsync -avh /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp/
-         /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
+         rsync -avh /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
     
               
     - name: Transferir base de datos
       shell: |
-         rsync -avh /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp/
-         /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
+         rsync -avh /mnt/colmedicos/mysqlserver/{{ instancia_origen }}/ /mnt/colmedicos/mysqlserver/{{ instancia_destino }}
 
     - name: Permisos para ERP
       ansible.builtin.file:
@@ -27,7 +25,7 @@
    
     - name: Permisos para MYSQL
       ansible.builtin.file:
-        path: /mnt/colmedicos/webserver/colmedicos/domains/mysqlserver/{{ instancia_destino }}
+        path: /mnt/colmedicos/mysqlserver/{{ instancia_destino }}
         mode: '0777'
         recurse: yes
         owner: mysql
