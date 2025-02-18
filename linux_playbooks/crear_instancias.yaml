@@ -8,7 +8,7 @@
     - name: Reemplazar último VirtualHost en httpd.conf
       replace:
         path: /etc/httpd/conf/httpd.conf
-        regexp: '(?s)(<VirtualHost\s+192\.168\.199\.28:80>(?:(?!</VirtualHost>).)*?</VirtualHost>)(\s*)$'
+        regexp: '(<VirtualHost\s+192\.168\.199\.28:80>(?:(?!<VirtualHost).)*?</VirtualHost>)(?!.*<VirtualHost)'
         replace: |
           <VirtualHost 192.168.199.28:80>
               SuexecUserGroup "#500" "#500"
