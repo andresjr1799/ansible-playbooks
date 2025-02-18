@@ -1,0 +1,78 @@
+---
+- name: Desplegar instancia web en Virtualmin
+  hosts: all
+  become: yes
+  vars:
+    dominio_instancia: "{{ survey_dominio_instancia }}"
+    
+  handlers:
+    - name: Recargar Apache
+      service:
+        name: httpd
+        state: reloaded
+        
+  tasks:
+    - name: Crear dominio en Virtualmin
+      shell: |
+        virtualmin create-domain --domain {{ dominio_instancia }}.rednacional.com.co \
+        --desc "{{ dominio_instancia }}" \
+        --parent rednacional.com.co \
+        --dir --web --dns --mysql
+      args:
+        executable: /bin/bash
+      register: dominio_creado
+      changed_when: dominio_creado.rc == 0
+
+    - name: Backup de httpd.conf
+      copy:
+        src: /etc/httpd/conf/httpd.conf
+        dest: /etc/httpd/conf/httpd.conf.bak.$(date +%Y%m%d)
+        remote_src: yes
+
+    - name: Reemplazar configuración del VirtualHost
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '(?ms)<VirtualHost.*?<\/VirtualHost>(?=[^<VirtualHost]*$)'
+        replace: |
+          <VirtualHost 10.180.96.8:80>
+              SuexecUserGroup "#500" "#500"
+              ServerName {{ dominio_instancia }}.rednacional.com.co
+              ServerAlias www.{{ dominio_instancia }}.rednacional.com.co
+              ServerAlias webmail.{{ dominio_instancia }}.rednacional.com.co
+              ServerAlias admin.{{ dominio_instancia }}.rednacional.com.co
+              DocumentRoot /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/public_html
+              ErrorLog /var/log/virtualmin/{{ dominio_instancia }}.rednacional.com.co_error_log
+              CustomLog /var/log/virtualmin/{{ dominio_instancia }}.rednacional.com.co_access_log combined
+              ScriptAlias /cgi-bin/ /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/cgi-bin/
+              DirectoryIndex index.snt index.html index.htm index.php index.php4 index.php5
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/public_html>
+                  Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch +ExecCGI
+                  allow from all
+                  AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+                  AddType application/x-httpd-php .snt .inc .php
+                  AddHandler fcgid-script .snt
+                  AddHandler fcgid-script .inc
+                  AddHandler fcgid-script .php
+                  AddHandler fcgid-script .php5
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .snt
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .inc
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .php
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .php5
+              </Directory>
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/cgi-bin>
+                  allow from all
+                  AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+              </Directory>
+              RewriteEngine on
+              RewriteCond %{HTTP_HOST} =webmail.{{ dominio_instancia }}.rednacional.com.co
+              RewriteRule ^(?!/.well-known)(.*) https://{{ dominio_instancia }}.rednacional.com.co:20000/ [R]
+              RewriteCond %{HTTP_HOST} =admin.{{ dominio_instancia }}.rednacional.com.co
+              RewriteRule ^(?!/.well-known)(.*) http://{{ dominio_instancia }}.rednacional.com.co:82/ [R]
+              RemoveHandler .snt
+              RemoveHandler .inc
+              RemoveHandler .php
+              RemoveHandler .php5
+              php_admin_value engine Off
+              FcgidMaxRequestLen 1073741824
+          </VirtualHost>
+      notify: Recargar Apache
