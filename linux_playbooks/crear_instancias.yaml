@@ -2,7 +2,7 @@
 - name: Desplegar instancia web en Virtualmin
   hosts: all
   become: yes
-  gather_facts: yes
+  gather_facts: no
             
   tasks:
     - name: Encontrar la última línea que contiene VirtualHost
@@ -15,9 +15,9 @@
       when: last_virtualhost_line.stdout != ""
 
     - name: Agregar nuevo VirtualHost
-      blockinfile:
+      lineinfile:
         path: /etc/httpd/conf/httpd.conf
-        block: |
+        line: |
           <VirtualHost 192.168.199.28:80>
               SuexecUserGroup "#500" "#500"
               ServerName {{ dominio_instancia }}.colmedicos.com
