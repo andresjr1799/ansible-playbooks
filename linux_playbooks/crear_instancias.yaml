@@ -1,11 +1,11 @@
 ---
-- name: Desplegar instancia web en Virtualmin
+- name: Desplegar instancias Red Nacional
   hosts: all
   become: yes
   gather_facts: yes
         
   tasks:
-    - name: Crear dominio en Virtualmin
+    - name: Crear servidor virtual en Virtualmin
       shell: |
         virtualmin create-domain --domain {{ dominio_instancia }}.colmedicos.com \
         --desc "{{ dominio_instancia }}" \
@@ -21,7 +21,13 @@
         src: /etc/httpd/conf/httpd.conf
         dest: /etc/httpd/conf/httpd.conf.bak.{{ ansible_date_time.date }}
         remote_src: yes
-
+        
+    - name: Backup de ssl.conf
+      copy:
+        src: /etc/httpd/conf.d/ssl.conf
+        dest: /etc/httpd/conf.d/ssl.conf.bak.{{ ansible_date_time.date }}
+        remote_src: yes
+        
     - name: Encontrar la última línea que contiene VirtualHost
       shell: grep -n '<VirtualHost 192.168.199.28:80>' /etc/httpd/conf/httpd.conf | tail -n 1 | cut -d ':' -f 1
       register: last_virtualhost_line
@@ -31,7 +37,7 @@
       shell: sed -i '{{ last_virtualhost_line.stdout }},$d' /etc/httpd/conf/httpd.conf
       when: last_virtualhost_line.stdout != ""
 
-    - name: Agregar nuevo VirtualHost
+    - name: Agregar nuevo virtualhost para la instancia
       lineinfile:
         path: /etc/httpd/conf/httpd.conf
         line: |
@@ -76,7 +82,8 @@
               php_admin_value engine Off
               FcgidMaxRequestLen 1073741824
           </VirtualHost>
-    - name: Agregar configuración SSL al final de ssl.conf
+
+    - name: Agregar configuración SSL
       lineinfile:
         path: /etc/httpd/conf.d/ssl.conf
         line: |
