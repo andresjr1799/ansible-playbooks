@@ -13,9 +13,9 @@
   tasks:
     - name: Crear dominio en Virtualmin
       shell: |
-        virtualmin create-domain --domain {{ dominio_instancia }}.rednacional.com.co \
+        virtualmin create-domain --domain {{ dominio_instancia }}.colmedicos.com \
         --desc "{{ dominio_instancia }}" \
-        --parent rednacional.com.co \
+        --parent colmedicos.com \
         --dir --web --dns --mysql
       args:
         executable: /bin/bash
@@ -35,16 +35,16 @@
         replace: |
           <VirtualHost 10.180.96.8:80>
               SuexecUserGroup "#500" "#500"
-              ServerName {{ dominio_instancia }}.rednacional.com.co
-              ServerAlias www.{{ dominio_instancia }}.rednacional.com.co
-              ServerAlias webmail.{{ dominio_instancia }}.rednacional.com.co
-              ServerAlias admin.{{ dominio_instancia }}.rednacional.com.co
-              DocumentRoot /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/public_html
-              ErrorLog /var/log/virtualmin/{{ dominio_instancia }}.rednacional.com.co_error_log
-              CustomLog /var/log/virtualmin/{{ dominio_instancia }}.rednacional.com.co_access_log combined
-              ScriptAlias /cgi-bin/ /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/cgi-bin/
+              ServerName {{ dominio_instancia }}.colmedicos.com
+              ServerAlias www.{{ dominio_instancia }}.colmedicos.com
+              ServerAlias webmail.{{ dominio_instancia }}.colmedicos.com
+              ServerAlias admin.{{ dominio_instancia }}.colmedicos.com
+              DocumentRoot /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html
+              ErrorLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_error_log
+              CustomLog /var/log/virtualmin/{{ dominio_instancia }}.colmedicos.com_access_log combined
+              ScriptAlias /cgi-bin/ /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin/
               DirectoryIndex index.snt index.html index.htm index.php index.php4 index.php5
-              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/public_html>
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/public_html>
                   Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch +ExecCGI
                   allow from all
                   AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
@@ -53,20 +53,20 @@
                   AddHandler fcgid-script .inc
                   AddHandler fcgid-script .php
                   AddHandler fcgid-script .php5
-                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .snt
-                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .inc
-                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .php
-                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/fcgi-bin/php5.fcgi .php5
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .snt
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .inc
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php
+                  FCGIWrapper /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/fcgi-bin/php5.fcgi .php5
               </Directory>
-              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.rednacional.com.co/cgi-bin>
+              <Directory /home/colmedicos/domains/{{ dominio_instancia }}.colmedicos.com/cgi-bin>
                   allow from all
                   AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
               </Directory>
               RewriteEngine on
-              RewriteCond %{HTTP_HOST} =webmail.{{ dominio_instancia }}.rednacional.com.co
-              RewriteRule ^(?!/.well-known)(.*) https://{{ dominio_instancia }}.rednacional.com.co:20000/ [R]
-              RewriteCond %{HTTP_HOST} =admin.{{ dominio_instancia }}.rednacional.com.co
-              RewriteRule ^(?!/.well-known)(.*) http://{{ dominio_instancia }}.rednacional.com.co:82/ [R]
+              RewriteCond %{HTTP_HOST} =webmail.{{ dominio_instancia }}.colmedicos.com
+              RewriteRule ^(?!/.well-known)(.*) https://{{ dominio_instancia }}.colmedicos.com:20000/ [R]
+              RewriteCond %{HTTP_HOST} =admin.{{ dominio_instancia }}.colmedicos.com
+              RewriteRule ^(?!/.well-known)(.*) http://{{ dominio_instancia }}.colmedicos.com:82/ [R]
               RemoveHandler .snt
               RemoveHandler .inc
               RemoveHandler .php
