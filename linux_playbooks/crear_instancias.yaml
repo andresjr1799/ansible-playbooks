@@ -59,4 +59,3 @@
               php_admin_value engine Off
               FcgidMaxRequestLen 1073741824
           </VirtualHost>
-        marker: ""  # Esto evita que Ansible agregue sus marcadores de comentario
