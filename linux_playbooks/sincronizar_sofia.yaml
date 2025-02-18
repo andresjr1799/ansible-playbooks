@@ -10,7 +10,10 @@
       shell: |
          rsync -avh --exclude='erp/pco/SOFIA' /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
     
-              
+    - name: Transferir index.snt
+      shell: |
+         rsync -avh  /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/index.snt /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/          
+
     - name: Transferir base de datos
       shell: |
          rsync -avh /mnt/colmedicos/mysqlserver/{{ instancia_origen }}/ /mnt/colmedicos/mysqlserver/{{ instancia_destino }}
