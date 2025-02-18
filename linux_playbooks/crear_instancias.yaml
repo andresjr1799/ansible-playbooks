@@ -76,3 +76,11 @@
               php_admin_value engine Off
               FcgidMaxRequestLen 1073741824
           </VirtualHost>
+    - name: Agregar configuración SSL al final de ssl.conf
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        line: |
+          <VirtualHost *:443>
+              DocumentRoot "/home/rednacional/{{ dominio_instancia }}.rednacional.com.co/public_html/"
+              ServerName {{ dominio_instancia }}.rednacional.com.co
+          </VirtualHost>
