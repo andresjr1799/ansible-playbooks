@@ -2,8 +2,6 @@
 - name: Desplegar instancia web en Virtualmin
   hosts: all
   become: yes
-  vars:
-    dominio_instancia: "{{ survey_dominio_instancia }}"
     
   handlers:
     - name: Recargar Apache
