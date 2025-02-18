@@ -7,9 +7,9 @@
   tasks:
     - name: Crear dominio en Virtualmin
       shell: |
-        virtualmin create-domain --domain {{ dominio_instancia }}.rednacional.com.co \
+        virtualmin create-domain --domain {{ dominio_instancia }}.colmedicos.com \
         --desc "{{ dominio_instancia }}" \
-        --parent rednacional.com.co \
+        --parent colmedicos.com \
         --dir --web --dns --mysql
       args:
         executable: /bin/bash
