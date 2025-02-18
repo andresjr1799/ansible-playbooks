@@ -38,7 +38,7 @@
         mode: '0777'
         recurse: yes
         owner: mysql
-        group: mysql
+        group: colmedicos
         follow: no
 
     - name: Crear enlace simbólico SOFIA
