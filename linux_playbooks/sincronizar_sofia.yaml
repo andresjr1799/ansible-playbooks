@@ -3,24 +3,29 @@
   hosts: sofia
   become: yes
   gather_facts: no
+
+  vars:
+    path_erp_origen: "/mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html"
+    path_erp_destino: "/mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html"
+    path_bd_origen: "/mnt/colmedicos/mysqlserver/{{ instancia_origen }}"
+    path_bd_destino: "/mnt/colmedicos/mysqlserver/{{ instancia_destino }}"
         
   tasks:
-   
     - name: Transferir ERP
       shell: |
-         rsync -avh --exclude='erp/pco/SOFIA' /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/erp /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/
+         rsync -avh --exclude='erp/pco/SOFIA' {{ path_erp_origen }}/erp {{ path_erp_destino }}
     
     - name: Transferir index.snt
       shell: |
-         rsync -avh  /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_origen }}.colmedicos.com/public_html/index.snt /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/          
+         rsync -avh --exclude='erp/pco/SOFIA' {{ path_erp_origen }}/index.snt {{ path_erp_destino }}          
 
     - name: Transferir base de datos
       shell: |
-         rsync -avh /mnt/colmedicos/mysqlserver/{{ instancia_origen }}/ /mnt/colmedicos/mysqlserver/{{ instancia_destino }}
+         rsync -avh {{ path_bd_origen }}/ {{ path_bd_destino }}
 
     - name: Permisos para ERP
       ansible.builtin.file:
-        path: /mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/erp
+        path: "{{ path_erp_destino }}/erp"
         mode: '0777'
         recurse: yes
         owner: root
@@ -29,7 +34,7 @@
    
     - name: Permisos para MYSQL
       ansible.builtin.file:
-        path: /mnt/colmedicos/mysqlserver/{{ instancia_destino }}
+        path: "{{ path_bd_destino }}"
         mode: '0777'
         recurse: yes
         owner: mysql
@@ -39,7 +44,7 @@
     - name: Crear enlace simbólico SOFIA
       ansible.builtin.file:
         src: ".."
-        dest: "/mnt/colmedicos/webserver/colmedicos/domains/{{ instancia_destino }}.colmedicos.com/public_html/erp/pco/SOFIA"
+        dest: "{{ path_erp_destino }}/erp/pco/SOFIA"
         state: link
   
 
