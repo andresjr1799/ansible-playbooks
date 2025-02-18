@@ -3,13 +3,7 @@
   hosts: all
   become: yes
   gather_facts: no
-    
-  handlers:
-    - name: Recargar Apache
-      service:
-        name: httpd
-        state: reloaded
-        
+            
   tasks:
     - name: Crear dominio en Virtualmin
       shell: |
@@ -74,6 +68,3 @@
               php_admin_value engine Off
               FcgidMaxRequestLen 1073741824
           </VirtualHost>
-
-    - name: Recargar Apache
-      listen: Recargar Apache
