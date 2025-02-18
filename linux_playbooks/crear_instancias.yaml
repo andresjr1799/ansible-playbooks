@@ -74,5 +74,3 @@
           php_admin_value engine Off
           FcgidMaxRequestLen 1073741824
       </VirtualHost>
-    backup: yes
-      notify: Recargar Apache
