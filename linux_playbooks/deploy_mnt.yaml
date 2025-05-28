@@ -36,6 +36,10 @@
         name: PyMySQL
         state: present
         
+    - name: "Instalar PyMySQL para módulos de Ansible"
+      pip:
+        name: cryptography
+        state: present        
 
     - name: "Verificar si EPEL repo existe"
       stat:
