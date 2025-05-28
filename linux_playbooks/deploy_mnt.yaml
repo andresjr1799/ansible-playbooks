@@ -152,8 +152,6 @@
       shell: |
         localectl set-locale LANG=es_ES.UTF-8
         localedef -i es_ES -f UTF-8 es_ES.UTF-8
-      args:
-        warn: false
 
     - name: "Instalar wget para Grafana"
       dnf:
