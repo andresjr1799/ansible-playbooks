@@ -25,6 +25,17 @@
         name: mysqld
         state: started
         enabled: yes
+        
+    - name: "Instalar pip para Python"
+      dnf:
+        name: python3-pip
+        state: present
+
+    - name: "Instalar PyMySQL para módulos de Ansible"
+      pip:
+        name: PyMySQL
+        state: present
+        
 
     - name: "Verificar si EPEL repo existe"
       stat:
