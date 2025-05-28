@@ -1,0 +1,271 @@
+---
+- name: "Instalación de Zabbix 7.2 y Grafana en RHEL9/ALMA9/ROCKY9"
+  hosts: all
+  become: yes
+  vars:
+    zabbix_db_password: "ZcvNx464VjhkffhXvb65"
+    grafana_smtp_user: "alertamiento@xolit.com"
+    grafana_smtp_password: "kzjslrlqmwkjmftt"
+    grafana_smtp_from_name: "Alertas Moovia"
+
+  tasks:
+    - name: "Verificar que se ejecuta con privilegios de root"
+      fail:
+        msg: "Este playbook debe ejecutarse con privilegios de root (become: yes)"
+      when: ansible_user_uid != 0 and ansible_become != true
+
+    - name: "Actualizar repositorios y paquetes del sistema"
+      dnf:
+        name: "*"
+        state: latest
+      register: system_update
+
+    - name: "Instalar MySQL Server"
+      dnf:
+        name: mysql-server
+        state: present
+
+    - name: "Iniciar y habilitar MySQL Server"
+      systemd:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    - name: "Verificar si EPEL repo existe"
+      stat:
+        path: /etc/yum.repos.d/epel.repo
+      register: epel_repo_file
+
+    - name: "Configurar exclusión de paquetes Zabbix en EPEL"
+      lineinfile:
+        path: /etc/yum.repos.d/epel.repo
+        insertafter: '^\[epel\]'
+        line: "excludepkgs=zabbix*"
+        backup: yes
+      when: epel_repo_file.stat.exists
+      ignore_errors: yes
+
+    - name: "Instalar repositorio de Zabbix 7.2"
+      dnf:
+        name: https://repo.zabbix.com/zabbix/7.2/release/alma/9/noarch/zabbix-release-latest-7.2.el9.noarch.rpm
+        state: present
+        disable_gpg_check: yes
+
+    - name: "Limpiar caché de dnf"
+      shell: dnf clean all
+      args:
+        warn: false
+
+    - name: "Instalar paquetes de Zabbix"
+      dnf:
+        name:
+          - zabbix-server-mysql
+          - zabbix-web-mysql
+          - zabbix-apache-conf
+          - zabbix-sql-scripts
+          - zabbix-selinux-policy
+          - zabbix-agent
+        state: present
+
+    - name: "Crear base de datos y usuario Zabbix"
+      mysql_query:
+        login_user: root
+        query:
+          - CREATE DATABASE IF NOT EXISTS zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+          - CREATE USER IF NOT EXISTS 'zabbix'@'localhost' IDENTIFIED BY '{{ zabbix_db_password }}';
+          - GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';
+          - SET GLOBAL log_bin_trust_function_creators = 1;
+          - FLUSH PRIVILEGES;
+
+    - name: "Importar esquema inicial de Zabbix"
+      mysql_db:
+        name: zabbix
+        login_user: zabbix
+        login_password: "{{ zabbix_db_password }}"
+        state: import
+        target: /usr/share/zabbix/sql-scripts/mysql/server.sql.gz
+        encoding: utf8mb4
+
+    - name: "Deshabilitar log_bin_trust_function_creators"
+      mysql_query:
+        login_user: root
+        query: SET GLOBAL log_bin_trust_function_creators = 0;
+
+    - name: "Configurar contraseña de base de datos en zabbix_server.conf"
+      lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '^#?\s*DBPassword=.*'
+        line: "DBPassword={{ zabbix_db_password }}"
+        backup: yes
+
+    - name: "Instalar mod_ssl para HTTPS"
+      dnf:
+        name: mod_ssl
+        state: present
+
+    - name: "Configurar redirección de raíz a /zabbix en httpd.conf"
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        insertafter: '<Directory "/var/www/html">'
+        line: '  RedirectMatch ^/$ /zabbix/'
+        backup: yes
+
+    - name: "Configurar VirtualHost para redirección HTTP a HTTPS"
+      blockinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        block: |
+          <VirtualHost *:80>
+              RewriteEngine On
+              RewriteCond %{HTTPS} !=on
+              RewriteRule ^/(.*) https://%{HTTP_HOST}/$1 [R=301,L]
+          </VirtualHost>
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - HTTP to HTTPS redirect"
+        backup: yes
+
+    - name: "Iniciar y habilitar servicios Zabbix"
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - zabbix-server
+        - zabbix-agent
+        - httpd
+        - php-fpm
+
+    - name: "Instalar paquetes de idioma"
+      dnf:
+        name:
+          - glibc-langpack-en
+          - glibc-langpack-es
+        state: present
+
+    - name: "Configurar localización a es_ES.UTF-8"
+      shell: |
+        localectl set-locale LANG=es_ES.UTF-8
+        localedef -i es_ES -f UTF-8 es_ES.UTF-8
+      args:
+        warn: false
+
+    - name: "Instalar wget para Grafana"
+      dnf:
+        name: wget
+        state: present
+
+    - name: "Descargar clave GPG de Grafana"
+      get_url:
+        url: https://rpm.grafana.com/gpg.key
+        dest: /tmp/grafana-gpg.key
+        mode: '0644'
+
+    - name: "Importar clave GPG de Grafana"
+      rpm_key:
+        key: /tmp/grafana-gpg.key
+        state: present
+
+    - name: "Limpiar archivo de clave GPG temporal"
+      file:
+        path: /tmp/grafana-gpg.key
+        state: absent
+
+    - name: "Configurar repositorio de Grafana"
+      yum_repository:
+        name: grafana
+        description: grafana
+        baseurl: https://rpm.grafana.com
+        gpgcheck: yes
+        gpgkey: https://rpm.grafana.com/gpg.key
+        enabled: yes
+        repo_gpgcheck: yes
+        sslverify: yes
+        sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+
+    - name: "Instalar Grafana"
+      dnf:
+        name: grafana
+        state: present
+
+    - name: "Iniciar y habilitar Grafana Server"
+      systemd:
+        name: grafana-server
+        state: started
+        enabled: yes
+
+    - name: "Configurar protocolo HTTPS en Grafana"
+      lineinfile:
+        path: /etc/grafana/grafana.ini
+        regexp: '^;?protocol = .*'
+        line: 'protocol = https'
+        insertafter: '^\[server\]'
+        backup: yes
+
+    - name: "Configurar puerto 9443 en Grafana"
+      lineinfile:
+        path: /etc/grafana/grafana.ini
+        regexp: '^;?http_port = .*'
+        line: 'http_port = 9443'
+        insertafter: '^\[server\]'
+        backup: yes
+
+    - name: "Configurar SMTP en Grafana"
+      blockinfile:
+        path: /etc/grafana/grafana.ini
+        insertafter: '^\[smtp\]'
+        block: |
+          enabled = true
+          host = smtp.office365.com:587
+          user = {{ grafana_smtp_user }}
+          password = {{ grafana_smtp_password }}
+          from_address = {{ grafana_smtp_user }}
+          from_name = {{ grafana_smtp_from_name }}
+          startTLS_policy = Always
+        marker: "; {mark} ANSIBLE MANAGED BLOCK - SMTP Configuration"
+        backup: yes
+
+    - name: "Reiniciar Grafana Server para aplicar cambios"
+      systemd:
+        name: grafana-server
+        state: restarted
+
+    - name: "Instalar plugin Zabbix para Grafana"
+      shell: grafana-cli plugins install alexanderzobnin-zabbix-app
+      register: plugin_install
+      failed_when: false
+      changed_when: plugin_install.rc == 0
+
+    - name: "Ajustar permisos de plugins de Grafana"
+      file:
+        path: /var/lib/grafana/plugins
+        owner: grafana
+        group: grafana
+        recurse: yes
+
+    - name: "Reiniciar todos los servicios finales"
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - zabbix-server
+        - zabbix-agent
+        - httpd
+        - php-fpm
+        - grafana-server
+
+    - name: "Obtener IP del servidor"
+      setup:
+        filter: ansible_default_ipv4
+      register: server_info
+
+    - name: "Mostrar información de acceso"
+      debug:
+        msg: |
+          ===================================================================
+          Servidor de Monitoreo (Zabbix y Grafana) desplegado con éxito.
+          
+          Puede acceder a Zabbix en: https://{{ ansible_default_ipv4.address }}/zabbix
+          Puede acceder a Grafana en: https://{{ ansible_default_ipv4.address }}:9443
+          
+          Credenciales por defecto:
+          - Zabbix: Admin/zabbix
+          - Grafana: admin/admin (se solicitará cambiar en primer acceso)
+          ===================================================================
