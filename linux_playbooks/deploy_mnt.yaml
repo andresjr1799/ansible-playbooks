@@ -14,11 +14,6 @@
         msg: "Este playbook debe ejecutarse con privilegios de root (become: yes)"
       when: ansible_user_uid != 0 and ansible_become != true
 
-    - name: "Actualizar repositorios y paquetes del sistema"
-      dnf:
-        name: "*"
-        state: latest
-      register: system_update
 
     - name: "Instalar MySQL Server"
       dnf:
@@ -53,8 +48,6 @@
 
     - name: "Limpiar caché de dnf"
       shell: dnf clean all
-      args:
-        warn: false
 
     - name: "Instalar paquetes de Zabbix"
       dnf:
